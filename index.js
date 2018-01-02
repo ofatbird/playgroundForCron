@@ -37,7 +37,8 @@
 // }).catch(err => echo(err))
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
-const jsonfile = require('jsonfile')
+const jsonfile = require('jsonfile');
+const to = require('await-to-js')
 
 puppeteer.launch().then(async browser => {
     let err, html;
@@ -52,7 +53,7 @@ puppeteer.launch().then(async browser => {
     })
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:57.0) Gecko/20100101 Firefox/57.0')
     await page.goto('https://btso.pw/search/girlsway', { waitUntil: 'domcontentloaded' });
-    [err, html] = await page.$eval('.data-list', el => el.outerHTML);
+    [err, html] = await to(page.$eval('.data-list', el => el.outerHTML));
     console.log(err+'\n'+html)
     // const $ = cheerio.load(html);
 
