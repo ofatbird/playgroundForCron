@@ -5,8 +5,9 @@ const base64 = require('base-64')
 //aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIvOTJs
 //aHR0cHM6Ly93d3cuamF2YnVzLnVzL0JDUFYtMDky
 const text = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIvOTJs')
-const count = 1;
-// const isEmpty = false;
+const count = 1
+const indexDB = []
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 puppeteer.launch().then(async browser => {
     while (true) {
         const page = await browser.newPage();
@@ -36,11 +37,13 @@ puppeteer.launch().then(async browser => {
                 }
             })
         }))
+        await page.close()
         if (!resources.length) {
-            
+            break;
         }
+        indexDB.concat(resources)
         count++
     }
-    console.log(htmls)
+    console.log(indexDB)
     await browser.close()
 })
