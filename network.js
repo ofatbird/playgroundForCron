@@ -21,7 +21,7 @@ puppeteer.launch().then(async browser => {
         //           console.log(await response.text())
         //     }
         // })
-        const [networkErr] = await to(page.goto(starPrefix + '2jv/' + count, {
+        const [networkErr] = await to(page.goto(starPrefix + 'b6b/' + count, {
             waitUntil: 'networkidle0'
         }))
         if (networkErr) {
@@ -120,6 +120,6 @@ puppeteer.launch().then(async browser => {
 
     // console.log(html)
     // jsonfile.writeFileSync('./json/star'+(pages-1).toString()[0]+'.json', jsonDB, {flag: 'a'})
-    jsonfile.writeFileSync('./json/bccz.json', bson, {flag: 'a'})
+    jsonfile.writeFileSync('./json/bqzx.json', bson, {flag: 'a'})
     await browser.close()
 })
