@@ -1,22 +1,20 @@
 const jsonfile = require('jsonfile')
 const magnet = require('magnet-uri')
-const data = jsonfile.readFileSync('./test.json')
+const data = jsonfile.readFileSync('./json/nf.json')
 const fs = require('fs')
 // const data1 = jsonfile.readFileSync('./data1.json')
 // 
 const data1 = {}
 const dataKeys = []
-const prefix = 'magnet:?xt=urn:btih:'
-const displayname = '&dn:'
-Object.keys(data).forEach(ele => {
-    data1[ele] = {
-        title: data[ele].title.match(/bban\-[0-9]+/ig),
-        mag: [data[ele].mag.split('/').reverse()[0]],
-        size: [data[ele].size]
-    }
-    // console.log(data1[ele].title[0].match(/[0-9]+/g))
-    dataKeys.push(data[ele].title.match(/bban\-[0-9]+/ig)[0].replace(/bban\-0*/ig,''))
-})
+// Object.keys(data).forEach(ele => {
+//     data1[ele] = {
+//         title: data[ele].title.match(/bban\-[0-9]+/ig),
+//         mag: [data[ele].mag.split('/').reverse()[0]],
+//         size: [data[ele].size]
+//     }
+//     // console.log(data1[ele].title[0].match(/[0-9]+/g))
+//     dataKeys.push(data[ele].title.match(/bban\-[0-9]+/ig)[0].replace(/bban\-0*/ig,''))
+// })
 // console.log(dataKeys)
 // for (let i = 0; i < dataKeys.length - 1; i++) {
 //     if (data1[i + 1].duplicated) {
@@ -55,7 +53,7 @@ Object.keys(data).forEach(ele => {
 //         }
 //     }
 // }
-fs.writeFileSync('./test.txt',dataKeys.filter((ele, index,array) => array.indexOf(ele) === index).sort((a,b) => a - b).join('\n'))
+// fs.writeFileSync('./test.txt',dataKeys.filter((ele, index,array) => array.indexOf(ele) === index).sort((a,b) => a - b).join('\n'))
 
 // // dataKeys.filter
 // Object.keys(data).forEach(ele => {
@@ -64,5 +62,19 @@ fs.writeFileSync('./test.txt',dataKeys.filter((ele, index,array) => array.indexO
 //     dn: data[ele].title
 //   }))
 // })
+const magData = {
 
-// jsonfile.writeFileSync('./data2.json', data1)
+}
+for (let index in data) {
+  const item = data[index]
+  magData[index] = {
+    title: item.title,
+    magnet: magnet.encode({
+      xt: `urn:btih:${item.mag.split('/').reverse()[0]}`,
+      dn: item.title
+    }),
+    size: item.size
+  }
+}
+
+jsonfile.writeFileSync('./magnet.json', magData)
