@@ -7,9 +7,10 @@ const base64 = require('base-64')
 //aHR0cHM6Ly93d3cuamF2YnVzLnVzL0JDUFYtMDky
 //aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2Uv
 //aHR0cHM6Ly93d3cuamF2YnVzLnVzL2FjdHJlc3Nlcw==
+// aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=  main page
 const text = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIvOTJs')
 const starPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIv')
-const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL2dlbnJlLzFk')
+const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=')
 const prefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzLw==')
 let count = 1
 let indexDB = []
@@ -51,20 +52,21 @@ puppeteer.launch().then(async browser => {
     //     indexDB = indexDB.concat(resources)
     //     console.log(count)
     //     count++
-    //     await sleep(getRandomArbitrary(1,5)*1000)
+    //     await sleep(getRandomArbitrary(1, 5) * 1000)
     // }
     // let bson = {}
     // indexDB.forEach((ele, index) => {
     //     bson[index] = ele
     // })
-    // console.log(indexDB)
+    // jsonfile.writeFileSync('./json/mainThread.json', bson)
     // console.log('films: '+indexDB.length)
     /*==================getMovByTheme====================*/
-    const bsonDB = jsonfile.readFileSync('./json/lb.json')
+    const bsonDB = jsonfile.readFileSync('./json/mainThread.json')
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
     const bson = {}
+    let networkErrFlag = 0
     let start = 0;
-    const breakpoint = 650;
+    const breakpoint = 10;
     // console.log(pool)
     while (start < breakpoint) {
         const { number } = pool[start]
@@ -76,8 +78,14 @@ puppeteer.launch().then(async browser => {
         }))
         if (networkErr) {
             console.log(chalk.yellow('Network Error'))
+            networkErrFlag++
+            if (networkErrFlag > 4) {
+                console.log(`${chalk.red(start)} is a shit`)
+                break
+            }
             continue
         }
+        if (networkErrFlag) networkErrFlag = 0
         const html = await page.evaluate(() => {
             const infos = document.querySelector('.info')
             const mags = document.querySelector('#magnet-table')
@@ -94,7 +102,7 @@ puppeteer.launch().then(async browser => {
         await sleep(getRandomArbitrary(1,5)*1000)
     }
 
-
+    jsonfile.writeFileSync('./json/subThread1.json', bson)
     /*=============getMovByStar=============*/
     // let length = indexDB.length
     // let bson = {}
@@ -167,6 +175,6 @@ puppeteer.launch().then(async browser => {
     // console.log(html)
     // jsonfile.writeFileSync('./json/star'+(pages-1).toString()[0]+'.json', jsonDB, {flag: 'a'})
     // jsonfile.writeFileSync('./json/bqzx.json', bson, {flag: 'a'})
-    jsonfile.writeFileSync('./json/lbmagdetail.json', bson)
+    // jsonfile.writeFileSync('./json/lbmagdetail.json', bson)
     await browser.close()
 })

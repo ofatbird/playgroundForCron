@@ -133,8 +133,8 @@ function listFiles (auth) {
 
 async function uploadFiles (auth) {
   var jsonDB = jsonfile.readFileSync('../json/lb.json')
-  const start = 500;
-  const breakpoint = 650;
+  const start = 650;
+  const breakpoint = 800;
   for (let index in jsonDB){
     if (index >=start && index < breakpoint) {
       await sleep(1500)
