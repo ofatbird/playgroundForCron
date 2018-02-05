@@ -69,10 +69,10 @@ function save2log(errlog) {
 }
 
 let networkErrFlag = 0
-let start = 800;
-const breakpoint = 1000;
+let start = 3292;
 const bsonDB = jsonfile.readFileSync('../json/mainThread.json')
 const pool = Object.keys(bsonDB).map(index => bsonDB[index])
+const breakpoint = pool.length;
 const bson = {}
 puppeteer.launch().then(async browser => {
     // console.log(pool)

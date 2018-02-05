@@ -12,95 +12,102 @@ const text = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIvOTJs')
 const starPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3N0YXIv')
 const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=')
 const prefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzLw==')
+const stored = jsonfile.readFileSync('./json/mainThread.json')
 let count = 1
 let indexDB = []
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 puppeteer.launch().then(async browser => {
-    // while (true) {
-    //     const page = await browser.newPage();
-    //     // page.on('response', async response => {
-    //     //     const req = response.request()
-    //     //     if (req.resourceType === 'xhr' && response.url.indexOf('ajax') > -1) {
-    //     //           console.log(await response.text())
-    //     //     }
-    //     // })
-    //     const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
-    //         waitUntil: 'domcontentloaded'
-    //     }))
-    //     if (networkErr) {
-    //         console.log(networkErr)
-    //         console.log(chalk.yellow('network error'))
-    //         continue
-    //     }
-    //     const [error, resources] = await to(page.evaluate(() => {
-    //         const items = document.querySelectorAll('.movie-box')
-    //         return [].map.call(items, ele => {
-    //             const info = ele.querySelector('img');
-    //             const date = ele.querySelectorAll('date')
-    //             return {
-    //                 cover: info.getAttribute('src'),
-    //                 title: info.getAttribute('title'),
-    //                 number: date[0].innerHTML,
-    //                 date: date[1].innerHTML
-    //             }
-    //         })
-    //     }))
-    //     await page.close()
-    //     if (!error && !resources.length) {
-    //         break;
-    //     }
-    //     indexDB = indexDB.concat(resources)
-    //     console.log(count)
-    //     count++
-    //     await sleep(getRandomArbitrary(1, 5) * 1000)
-    // }
-    // let bson = {}
-    // indexDB.forEach((ele, index) => {
-    //     bson[index] = ele
-    // })
-    // jsonfile.writeFileSync('./json/mainThread.json', bson)
-    // console.log('films: '+indexDB.length)
-    /*==================getMovByTheme====================*/
-    const bsonDB = jsonfile.readFileSync('./json/mainThread.json')
-    const pool = Object.keys(bsonDB).map(index => bsonDB[index])
-    const bson = {}
-    let networkErrFlag = 0
-    let start = 0;
-    const breakpoint = 10;
-    // console.log(pool)
-    while (start < breakpoint) {
-        const { number } = pool[start]
-        const uri = 'https://www.javbus.us/' + number
-        // console.log(uri)
+    while (true) {
         const page = await browser.newPage();
-        const [networkErr] = await to(page.goto(uri, {
-            waitUntil: 'networkidle0'
+        // page.on('response', async response => {
+        //     const req = response.request()
+        //     if (req.resourceType === 'xhr' && response.url.indexOf('ajax') > -1) {
+        //           console.log(await response.text())
+        //     }
+        // })
+        const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
+            waitUntil: 'domcontentloaded'
         }))
         if (networkErr) {
-            console.log(chalk.yellow('Network Error'))
-            networkErrFlag++
-            if (networkErrFlag > 4) {
-                console.log(`${chalk.red(start)} is a shit`)
-                break
-            }
+            console.log(networkErr)
+            console.log(chalk.yellow('network error'))
             continue
         }
-        if (networkErrFlag) networkErrFlag = 0
-        const html = await page.evaluate(() => {
-            const infos = document.querySelector('.info')
-            const mags = document.querySelector('#magnet-table')
-            return {
-                info: infos.outerHTML,
-                mags: mags.outerHTML
-            }
-        })
+        const [error, resources] = await to(page.evaluate(() => {
+            const items = document.querySelectorAll('.movie-box')
+            return [].map.call(items, ele => {
+                const info = ele.querySelector('img');
+                const date = ele.querySelectorAll('date')
+                return {
+                    cover: info.getAttribute('src'),
+                    title: info.getAttribute('title'),
+                    number: date[0].innerHTML,
+                    date: date[1].innerHTML
+                }
+            })
+        }))
         await page.close()
-        console.log(chalk.gray(start))
-        bson[start++] = Object.assign({
-            title: number
-        }, html)
-        await sleep(getRandomArbitrary(1,5)*1000)
+        if (!error && !resources.length) {
+            break;
+        }
+        const newRes = resources.filter(ele => !stored[ele.cover])
+        console.log(newRes.length)
+        indexDB = indexDB.concat(newRes)
+        console.log(count)
+        count++
+        
+        if(newRes.length < 30) {
+            break;
+        }
+        await sleep(getRandomArbitrary(1, 5) * 1000)
     }
+    let bson = {}
+    indexDB.forEach((ele, index) => {
+        bson[index] = ele
+    })
+    // jsonfile.writeFileSync('./json/mainThread1.json', bson)
+    // console.log('films: '+indexDB.length)
+    /*==================getMovByTheme====================*/
+    // const bsonDB = jsonfile.readFileSync('./json/mainThread.json')
+    // const pool = Object.keys(bsonDB).map(index => bsonDB[index])
+    // const bson = {}
+    // let networkErrFlag = 0
+    // let start = 0;
+    // const breakpoint = 10;
+    // // console.log(pool)
+    // while (start < breakpoint) {
+    //     const { number } = pool[start]
+    //     const uri = 'https://www.javbus.us/' + number
+    //     // console.log(uri)
+    //     const page = await browser.newPage();
+    //     const [networkErr] = await to(page.goto(uri, {
+    //         waitUntil: 'networkidle0'
+    //     }))
+    //     if (networkErr) {
+    //         console.log(chalk.yellow('Network Error'))
+    //         networkErrFlag++
+    //         if (networkErrFlag > 4) {
+    //             console.log(`${chalk.red(start)} is a shit`)
+    //             break
+    //         }
+    //         continue
+    //     }
+    //     if (networkErrFlag) networkErrFlag = 0
+    //     const html = await page.evaluate(() => {
+    //         const infos = document.querySelector('.info')
+    //         const mags = document.querySelector('#magnet-table')
+    //         return {
+    //             info: infos.outerHTML,
+    //             mags: mags.outerHTML
+    //         }
+    //     })
+    //     await page.close()
+    //     console.log(chalk.gray(start))
+    //     bson[start++] = Object.assign({
+    //         title: number
+    //     }, html)
+    //     await sleep(getRandomArbitrary(1,5)*1000)
+    // }
 
     jsonfile.writeFileSync('./json/subThread1.json', bson)
     /*=============getMovByStar=============*/
