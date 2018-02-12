@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 let mailOptions = {
   from: '17625935365@163.com', // sender address
-  to: '973367375@qq.com', // list of receivers
+  to: '13813983264@163.com', // list of receivers
   subject: 'Hello world', // Subject line
   text: 'dsfcsddwedqwqw', // plain text body
   // html: '<b>Hello world?</b>' // html body
@@ -33,7 +33,7 @@ transporter.verify(function (error, success) {
       }
       console.log('Message sent: %s', info.messageId)
       // Preview only available when sending through an Ethereal account
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
+      // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
 
     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@blurdybloop.com>
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...

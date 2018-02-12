@@ -50,15 +50,10 @@ puppeteer.launch().then(async browser => {
         if (!error && !resources.length) {
             break;
         }
-        const newRes = resources.filter(ele => !stored[ele.cover])
-        console.log(newRes.length)
-        indexDB = indexDB.concat(newRes)
+        indexDB = indexDB.concat(resources)
         console.log(count)
         count++
         
-        if(newRes.length < 30) {
-            break;
-        }
         await sleep(getRandomArbitrary(1, 5) * 1000)
     }
     let bson = {}
