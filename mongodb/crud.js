@@ -203,7 +203,7 @@ function fetchByGenre(uri, index) {
 function saveDate(db) {
     let networkErrFlag = 0
     let start = 0;
-    const bsonDB = jsonfile.readFileSync(`../json/genre_7.json`)
+    const bsonDB = jsonfile.readFileSync(`../json/genre_9.json`)
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
     const breakpoint = pool.length;
     console.log(pool.length)
