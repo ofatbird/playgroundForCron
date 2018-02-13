@@ -35,8 +35,7 @@ function connectMongo(excute) {
 
     db.once('open', () => {
         console.log('Connected to MongoDB')
-        excute()
-        db.close()
+        excute(db)
     })
 }
 
@@ -62,24 +61,16 @@ function findByNumber(number) {
 
 function save2Atlas(bson) {
     return new Promise((resolve, reject) => {
-        findByNumber(bson.number)
-            .then(docs => {
-                if (docs.length) {
-                    resolve('We owned this number')
-                } else {
-                    const item = new Store(bson)
-                    item.save(err => {
-                        if (!err) {
-                            resolve('saved')
-                        } else {
-                            reject('failed')
-                        }
-                    })
-                }
-            })
-            .catch(err => {
-                reject(err)
-            })
+
+        const item = new Store(bson)
+        item.save(err => {
+            if (!err) {
+                resolve('saved')
+            } else {
+                reject('failed')
+            }
+
+        })
     })
 }
 
@@ -101,16 +92,16 @@ async function filter(resources) {
 }
 
 function fetchUpdate() {
-    console.log('excuted')
     const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=')
-    let count = 11
+    let count = 1
     let indexDB = []
 
-    puppeteer.launch().then(async browser => {
+    puppeteer.launch({timeout: 15000}).then(async browser => {
         while (true) {
             const page = await browser.newPage();
-
-            const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
+            const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
+            // console.log(uri)
+            const [networkErr] = await to(page.goto(uri, {
                 waitUntil: 'domcontentloaded'
             }))
             if (networkErr) {
@@ -132,7 +123,8 @@ function fetchUpdate() {
                 })
             }))
             await page.close()
-            if (!error && !resources.length) {
+            if (error||(!error && !resources.length)) {
+                console.log(error)
                 break;
             }
             const newRes = await filter(resources)
@@ -142,15 +134,15 @@ function fetchUpdate() {
                 break
             }
             count++
-            await sleep(getRandomArbitrary(1, 5) * 1000)
+            // await sleep(getRandomArbitrary(1, 5) * 1000)
         }
         let bson = {}
         indexDB.forEach((ele, index) => {
             bson[index] = ele
         })
         await browser.close()
-        // jsonfile.writeFileSync('../json/updateThread.json', bson)
-        db.close()
+        jsonfile.writeFileSync('../json/updateThread.json', bson)
+        // db.close()
     })
 }
 
@@ -164,8 +156,8 @@ function fetchByGenre(uri, index) {
         puppeteer.launch().then(async browser => {
             while (true) {
                 const page = await browser.newPage();
-
-                const [networkErr] = await to(page.goto(uri + '/' + count, {
+                const url = count > 1 ? uri + '/' + count : uri
+                const [networkErr] = await to(page.goto(url, {
                     waitUntil: 'domcontentloaded'
                 }))
                 if (networkErr) {
@@ -193,7 +185,7 @@ function fetchByGenre(uri, index) {
                 indexDB = indexDB.concat(resources)
                 console.log(`${count} done`)
                 count++
-                await sleep(getRandomArbitrary(1, 5) * 1000)
+                await sleep(getRandomArbitrary(1, 3) * 1000)
             }
             let bson = {}
             indexDB.forEach((ele, index) => {
@@ -208,20 +200,29 @@ function fetchByGenre(uri, index) {
 
 }
 
-function saveDate() {
+function saveDate(db) {
     let networkErrFlag = 0
-    let start = 76;
-    const bsonDB = jsonfile.readFileSync('../json/updateThread.json')
+    let start = 0;
+    const bsonDB = jsonfile.readFileSync(`../json/genre_7.json`)
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
     const breakpoint = pool.length;
     console.log(pool.length)
     const bson = {}
+    process.on('exit', () => {
+        console.log(`Program exit at ${chalk.gray(start)}`)
+    })
     puppeteer.launch().then(async browser => {
         // console.log(pool)
         while (start < breakpoint) {
             const { number, cover } = pool[start]
             const uri = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVz') + '/' + number
-            // console.log(uri)
+            const doc = await findByNumber(number)
+            if (doc.length) {
+                console.log(`We updated this ${start}, no more upload again`)
+                console.log(number === doc[0].number)
+                start++
+                continue
+            }
             const page = await browser.newPage();
             const [networkErr] = await to(page.goto(uri, {
                 waitUntil: 'networkidle0'
@@ -260,7 +261,7 @@ function saveDate() {
                 console.log(saveSucc)
             }
             start++
-            await sleep(getRandomArbitrary(1, 3) * 1000)
+            // await sleep(getRandomArbitrary(1, 3) * 1000)
         }
 
         await browser.close()
@@ -269,9 +270,9 @@ function saveDate() {
 }
 
 async function launch() {
-    const index = 8
+    const index = 7
     const list = jsonfile.readFileSync('../json/genre.json')
-    for (let i = index; i < 30; i++) {
+    for (let i = index; i < 8; i++) {
         console.log(`Current genre ${i}`)
         if (list[i].tag === base64zh('5ZCM5oCn', 'd')) {
             continue
@@ -280,6 +281,6 @@ async function launch() {
     }
 }
 
-launch()
-
-// fetchByGenre(list[index].uri, index)
+// launch()
+// fetchUpdate()
+connectMongo(saveDate)
