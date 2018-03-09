@@ -24,7 +24,9 @@ function base64zh(value, format) {
 
 // connect mongodb
 function connectMongo(excute) {
-    mongoose.connect('mongodb://admin:785689@cluster0-shard-00-00-koeuy.mongodb.net:27017,cluster0-shard-00-01-koeuy.mongodb.net:27017,cluster0-shard-00-02-koeuy.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin');
+    // mongodb://admin:785689@cluster0-shard-00-00-koeuy.mongodb.net:27017,cluster0-shard-00-01-koeuy.mongodb.net:27017,cluster0-shard-00-02-koeuy.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin
+    // mongodb://admin:785689@lescluster-shard-00-00-njhnj.mongodb.net:27017,lescluster-shard-00-01-njhnj.mongodb.net:27017,lescluster-shard-00-02-njhnj.mongodb.net:27017/test?ssl=true&replicaSet=lesCluster-shard-0&authSource=admin
+    mongoose.connect('mongodb://admin:785689@lescluster-shard-00-00-njhnj.mongodb.net:27017,lescluster-shard-00-01-njhnj.mongodb.net:27017,lescluster-shard-00-02-njhnj.mongodb.net:27017/test?ssl=true&replicaSet=lesCluster-shard-0&authSource=admin');
 
     const db = mongoose.connection;
 
@@ -75,7 +77,7 @@ function save2Atlas(bson) {
 }
 
 function save2log(errlog) {
-    fs.writeFileSync('./err.log', errlog, 'a')
+    fs.writeFileSync('./err.log', errlog, {flag: 'a'})
 }
 
 async function filter(resources) {
@@ -99,9 +101,9 @@ function fetchUpdate() {
     puppeteer.launch({timeout: 15000}).then(async browser => {
         while (true) {
             const page = await browser.newPage();
-            const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
+            // const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
             // console.log(uri)
-            const [networkErr] = await to(page.goto(uri, {
+            const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
                 waitUntil: 'domcontentloaded'
             }))
             if (networkErr) {
@@ -202,8 +204,10 @@ function fetchByGenre(uri, index) {
 
 function saveDate(db) {
     let networkErrFlag = 0
-    let start = 0;
-    const bsonDB = jsonfile.readFileSync(`../json/genre_9.json`)
+    let start = 0
+    // let start = 3149;
+    // let counter = 4054;
+    const bsonDB = jsonfile.readFileSync(`../json/updateThread.json`)
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
     const breakpoint = pool.length;
     console.log(pool.length)
@@ -232,7 +236,7 @@ function saveDate(db) {
                 networkErrFlag++
                 if (networkErrFlag > 3) {
                     console.log(`${chalk.red(start)} is a shit, something is broken here`)
-                    save2log(`${getFormatTime()}: ${number} is a shit, Network is broken here \n`)
+                    save2log(`${getFormatTime()}: ${start}=>${number} is a shit, Network is broken here \n`)
                     networkErrFlag = 0
                     start++
                 }
@@ -253,6 +257,8 @@ function saveDate(db) {
             const [saveErr, saveSucc] = await to(save2Atlas(Object.assign({
                 number,
                 pic: cover,
+                // insertDate: Number(new Date('03/05/2018').getTime()) + (pool.length * 200 + start),
+                insertDate: Number(Date.now())
             }, html)))
             if (saveErr) {
                 console.log(saveErr)
@@ -261,7 +267,7 @@ function saveDate(db) {
                 console.log(saveSucc)
             }
             start++
-            // await sleep(getRandomArbitrary(1, 3) * 1000)
+            await sleep(getRandomArbitrary(1, 3) * 1000)
         }
 
         await browser.close()
@@ -270,9 +276,9 @@ function saveDate(db) {
 }
 
 async function launch() {
-    const index = 7
+    const index = 35
     const list = jsonfile.readFileSync('../json/genre.json')
-    for (let i = index; i < 8; i++) {
+    for (let i = index; i < 50; i++) {
         console.log(`Current genre ${i}`)
         if (list[i].tag === base64zh('5ZCM5oCn', 'd')) {
             continue

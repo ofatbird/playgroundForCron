@@ -2,15 +2,17 @@ const puppeteer = require('puppeteer');
 const jsonfile = require('jsonfile')
 const base64 = require('base-64')
 const to = require('await-to-js').to
-const url = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=')
+// aHR0cHM6Ly93d3cuamF2YnVzLnVzL2dlbnJlLzFk
+// aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U= mainpage
+const url = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL2dlbnJlLzFk')
 // const bson = {}
 
 puppeteer.launch({ timeout: 15000 }).then(async browser => {
     while (true) {
         const page = await browser.newPage()
-        const [netErr] = await to(page.goto(url.replace('/page', ''), { waitUntil: 'domcontentloaded' }))
+        const [netErr] = await to(page.goto(url + '/1', { waitUntil: 'domcontentloaded' }))
         if (!netErr) {
-            console.log(await page.content())
+            // console.log(await page.content())
             const [error, resources] = await to(page.evaluate(() => {
                 const items = document.querySelectorAll('.movie-box')
                 return [].map.call(items, ele => {

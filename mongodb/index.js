@@ -15,19 +15,32 @@ db.once('open', () => {
     // db.close()
 })
 
-// const item = new Store({
-//     number: '12345',
-//     pic: 'String',
-
-// })
-
-// item.save((err, docs) => {
-//     if (err) return console.log(err)
-//     console.log(docs)
+// Store.find(), async (err, docs) => {
+//     console.log(`signal:${err}`)
+//     for (let i = 0;i<docs.length; i++) {
+//         docs[i].insertDate = i
+//         await docs[i].save()
+//     }
 //     db.close()
 // })
-// 
-Store.find({ number: '123456'}, (...args) => {
-    console.log(args)
+
+
+function findAndUpdate(count) {
+    return new Promise((resolve, reject) => {
+        Store.find().skip(count).limit(1).exec(async (err, docs) => {
+            if (err) return reject(err)
+            docs[0].insertDate = count
+            await docs[0].save()
+            resolve()
+        })
+    })
+}
+async function update() {
+    for (let ii = 5483; ii < 20000; ii++) {
+        await findAndUpdate(ii)
+        console.log(`${ii} success`)
+    }
     db.close()
-})
+}
+
+update()
