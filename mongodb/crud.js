@@ -86,7 +86,6 @@ async function filter(resources) {
         const number = resources[i].number
         const doc = await findByNumber(number)
         if (!doc.length) {
-            console.log(doc)
             tmp.push(resources[i])
         }
     }
@@ -94,19 +93,23 @@ async function filter(resources) {
 }
 
 function fetchUpdate() {
-    const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL3BhZ2U=')
-    let count = 1
+    const mainPrefix = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVzL2dlbnJlLzFk')
+    let count = 80
     let indexDB = []
 
     puppeteer.launch({timeout: 15000}).then(async browser => {
-        while (true) {
+        while (count < 90) {
             const page = await browser.newPage();
+            await page.setExtraHTTPHeaders({
+                cookie: `__cfduid=dcdcbd6f154a3290d66b10b5ced0df7861520604389; PHPSESSID=8blp3ntq4k2npqcvic059at5p5; HstCfa3034720=1520604392613; HstCla3034720=1520604392613; HstCmu3034720=1520604392613; HstPn3034720=1; HstPt3034720=1; HstCnv3034720=1; HstCns3034720=1; __dtsu=D9E9B66BE994A25A7E395EB8025B2A67; existmag=all`
+            })
             // const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
             // console.log(uri)
             const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
                 waitUntil: 'domcontentloaded'
             }))
             if (networkErr) {
+                await page.close()
                 console.log(networkErr)
                 console.log(chalk.yellow('network error'))
                 continue
@@ -129,12 +132,12 @@ function fetchUpdate() {
                 console.log(error)
                 break;
             }
-            const newRes = await filter(resources)
-            indexDB = indexDB.concat(newRes)
-            console.log(count, newRes.length)
-            if (newRes.length < 30) {
-                break
-            }
+            // const newRes = await filter(resources)
+            indexDB = indexDB.concat(resources)
+            // console.log(count, newRes.length)
+            // if (newRes.length < 30) {
+            //     break
+            // }
             count++
             // await sleep(getRandomArbitrary(1, 5) * 1000)
         }
@@ -215,7 +218,7 @@ function saveDate(db) {
     process.on('exit', () => {
         console.log(`Program exit at ${chalk.gray(start)}`)
     })
-    puppeteer.launch().then(async browser => {
+    puppeteer.launch({/*headless: false*/}).then(async browser => {
         // console.log(pool)
         while (start < breakpoint) {
             const { number, cover } = pool[start]
@@ -232,6 +235,7 @@ function saveDate(db) {
                 waitUntil: 'networkidle0'
             }))
             if (networkErr) {
+                await page.close()
                 console.log(chalk.yellow('Network Error'))
                 networkErrFlag++
                 if (networkErrFlag > 3) {
@@ -243,6 +247,13 @@ function saveDate(db) {
                 continue
             }
             if (networkErrFlag) networkErrFlag = 0
+            const htmlStr = await page.content()
+            if (htmlStr.indexOf('下方磁力連結尚在審核中') == -1) {
+                await page.close()
+                console.log('they do not have this')
+                start++
+                continue
+            }
             const html = await page.evaluate(() => {
                 const infos = document.querySelector('.info')
                 const mags = document.querySelector('#magnet-table')
