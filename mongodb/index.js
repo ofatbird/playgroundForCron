@@ -70,8 +70,8 @@ function findAndUpdate(count) {
 }
 const indexDB = {}
 let count = 0
-async function update() {//5239
-    for (let ii = 5239; ii < 6000; ii++) { //21170,21165
+async function update() {//7364
+    for (let ii = 20000; ii < 21165; ii++) { //21170,21165
         const [err, item] = await to(findAndUpdate(ii))
         if (err) {
             console.log(`${ii} , ${err}`)

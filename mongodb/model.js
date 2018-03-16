@@ -7,7 +7,7 @@ const mySchema = new mongoose.Schema({
     },
     pic: String,
     info: String,
-    magnet: String,
+    magnet: Array,
     insertDate: {type:Number,index: true}
 })
 const Store = module.exports = mongoose.model('Store', mySchema)
