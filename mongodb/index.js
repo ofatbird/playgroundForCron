@@ -4,7 +4,7 @@ const Store = require('./model')
 const to = require('await-to-js').to
 const jsonfile = require('jsonfile')
 
-mongoose.connect('mongodb://admin:785689cui@cluster0-shard-00-00-koeuy.mongodb.net:27017,cluster0-shard-00-01-koeuy.mongodb.net:27017,cluster0-shard-00-02-koeuy.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin');
+mongoose.connect('mongodb://admin:785689@lescluster-shard-00-00-njhnj.mongodb.net:27017,lescluster-shard-00-01-njhnj.mongodb.net:27017,lescluster-shard-00-02-njhnj.mongodb.net:27017/test?ssl=true&replicaSet=lesCluster-shard-0&authSource=admin');
 
 const db = mongoose.connection;
 
@@ -63,6 +63,7 @@ function findAndUpdate(count) {
                 magnet: docs[0].magnet
             }
             docs[0].insertDate = Number(Date.now())
+            // console.log(docs[0])
             await docs[0].save()
             resolve(item)
         })
@@ -70,8 +71,8 @@ function findAndUpdate(count) {
 }
 const indexDB = {}
 let count = 0
-async function update() {//7364
-    for (let ii = 20000; ii < 21165; ii++) { //21170,21165
+async function update() {//7364//3470 
+    for (let ii = 158; ii < 3470; ii++) { //21170,21165
         const [err, item] = await to(findAndUpdate(ii))
         if (err) {
             console.log(`${ii} , ${err}`)
