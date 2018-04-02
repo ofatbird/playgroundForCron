@@ -55,8 +55,14 @@ function getRandomArbitrary(min, max) {
 // 查询是否存在
 function findByNumber(number) {
     return new Promise((resolve, reject) => {
-        Store.find({ number }, (err, docs) => {
-            if (err) { reject(err) } else { resolve(docs) }
+        Store.find({
+            number
+        }, (err, docs) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(docs)
+            }
         })
     })
 }
@@ -77,7 +83,9 @@ function save2Atlas(bson) {
 }
 
 function save2log(errlog) {
-    fs.writeFileSync('./err.log', errlog, {flag: 'a'})
+    fs.writeFileSync('./err.log', errlog, {
+        flag: 'a'
+    })
 }
 
 async function filter(resources) {
@@ -97,7 +105,9 @@ function fetchUpdate() {
     let count = 80
     let indexDB = []
 
-    puppeteer.launch({timeout: 15000}).then(async browser => {
+    puppeteer.launch({
+        timeout: 15000
+    }).then(async browser => {
         while (count < 90) {
             const page = await browser.newPage();
             await page.setExtraHTTPHeaders({
@@ -128,7 +138,7 @@ function fetchUpdate() {
                 })
             }))
             await page.close()
-            if (error||(!error && !resources.length)) {
+            if (error || (!error && !resources.length)) {
                 console.log(error)
                 break;
             }
@@ -212,24 +222,27 @@ function saveDate(db) {
     // let counter = 4054;
     const bsonDB = jsonfile.readFileSync(`../json/updateThread.json`)
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
-    const breakpoint = pool.length;
+    const breakpoint = 1||pool.length;
     console.log(pool.length)
     const bson = {}
     process.on('exit', () => {
         console.log(`Program exit at ${chalk.gray(start)}`)
     })
-    puppeteer.launch({/*headless: false*/}).then(async browser => {
+    puppeteer.launch({ /*headless: false*/ }).then(async browser => {
         // console.log(pool)
         while (start < breakpoint) {
-            const { number, cover } = pool[start]
+            const {
+                number,
+                cover
+            } = pool[start]
             const uri = base64.decode('aHR0cHM6Ly93d3cuamF2YnVzLnVz') + '/' + number
-            const doc = await findByNumber(number)
-            if (doc.length) {
-                console.log(`We updated this ${start}, no more upload again`)
-                console.log(number === doc[0].number)
-                start++
-                continue
-            }
+            // const doc = await findByNumber(number)
+            // if (doc.length) {
+            //     console.log(`We updated this ${start}, no more upload again`)
+            //     console.log(number === doc[0].number)
+            //     start++
+            //     continue
+            // }
             const page = await browser.newPage();
             const [networkErr] = await to(page.goto(uri, {
                 waitUntil: 'networkidle0'
@@ -248,35 +261,72 @@ function saveDate(db) {
             }
             if (networkErrFlag) networkErrFlag = 0
             const htmlStr = await page.content()
-            if (htmlStr.indexOf('下方磁力連結尚在審核中') == -1) {
+            
+            const html = await page.evaluate(() => {
+                const infos = document.querySelector('.info')
+                const mags = document.querySelector('#magnet-table')
+                let list = []
+                let infostr = ''
+
+                // const $$ = Array.isArray(element.magnet) ? cheerio.load(element.magnet[0]) : cheerio.load(element.magnet)
+                // const $ = cheerio.load(element.info)
+                if (mags.innerText.indexOf('暫時沒有') > -1) {
+                    list = null
+                } else {
+                    const atag = [].filter.call(mags.querySelectorAll('a'), element => {
+                        return element.className.indexOf('btn') == -1
+                    })
+                    const star = [].slice.call(infos.querySelectorAll('.star-name>a'))
+                    const info_p = infos.querySelectorAll('p')
+                    let htmlstr = ''
+                    for (let i = 0; i < 3; i++) {
+                        const inner = info_p[i].innerText.replace(/\&\#[0-9a-z]{5}\;/ig, '')
+                        infostr += `<p>${inner}</p>`
+                    }
+                    if (star.length) {
+                        star.forEach(ele => {
+                            htmlstr += `<span> ${$(ele).text()} </span>`
+                        })
+                    } else {
+                        htmlstr = ` <span> 未知 </span>`
+                    }
+                    infostr += `<p><span>演员:</span>${htmlstr}</p>`
+                    for (let i = 0; i < atag.length; i += 3) {
+                        list.push({
+                            name: atag[i].innerText.replace(/\s/g, ''),
+                            size: atag[i + 1].innerText.replace(/\s/g, ''),
+                            href: unescape(atag[i].getAttribute('href')),
+                        })
+                    }
+                }
+
+                return {
+                    info: infostr,
+                    magnet: list
+                }
+            })
+            if (!html.magnet) {
                 await page.close()
                 console.log('they do not have this')
                 start++
                 continue
             }
-            const html = await page.evaluate(() => {
-                const infos = document.querySelector('.info')
-                const mags = document.querySelector('#magnet-table')
-                return {
-                    info: infos.outerHTML,
-                    magnet: mags.outerHTML
-                }
-            })
             await page.close()
             console.log(chalk.gray(start))
+            console.log(html)
             /*save into mongodb atlas*/
-            const [saveErr, saveSucc] = await to(save2Atlas(Object.assign({
-                number,
-                pic: cover,
-                // insertDate: Number(new Date('03/05/2018').getTime()) + (pool.length * 200 + start),
-                insertDate: Number(Date.now())
-            }, html)))
-            if (saveErr) {
-                console.log(saveErr)
-                save2log(`${getFormatTime()}: ${saveErr};failed to insert data ${number}\n`)
-            } else {
-                console.log(saveSucc)
-            }
+            // const [saveErr, saveSucc] = await to(save2Atlas(Object.assign({
+            //     number,
+            //     pic: cover,
+            //     // insertDate: Number(new Date('03/05/2018').getTime()) + (pool.length * 200 + start),
+            //     insertDate: Number(Date.now())
+            // }, html)))
+            // if (saveErr) {
+            //     console.log(saveErr)
+            //     save2log(`${getFormatTime()}: ${saveErr};failed to insert data ${number}\n`)
+            // } else {
+            //     console.log(saveSucc)
+            // }
             start++
             await sleep(getRandomArbitrary(1, 3) * 1000)
         }
