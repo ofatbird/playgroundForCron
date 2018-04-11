@@ -353,8 +353,8 @@ async function launch() {
 }
 
 // launch()
-fetchUpdate(109).then(() => {
-    connectMongo(saveDate)
-})
+// fetchUpdate(4).then(() => {
+//     // connectMongo(saveDate)
+// })
 
-// connectMongo(saveDate)
+connectMongo(saveDate)
