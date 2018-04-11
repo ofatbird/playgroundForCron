@@ -54,25 +54,17 @@ function findAndUpdate(count) {
     return new Promise((resolve, reject) => {
         Store.find().skip(count).limit(1).exec(async (err, docs) => {
             if (err) return reject(err)
-            // const item = docs[0]
-            deleteUselessText(docs[0])
-            const item = {
-                number: docs[0].number,
-                pic: docs[0].pic,
-                info: docs[0].info,
-                magnet: docs[0].magnet
-            }
-            docs[0].insertDate = Number(Date.now())
+            docs[0].fake = false
             // console.log(docs[0])
             await docs[0].save()
-            resolve(item)
+            resolve('success')
         })
     })
 }
 const indexDB = {}
 let count = 0
-async function update() {//7364//3470 
-    for (let ii = 158; ii < 3470; ii++) { //21170,21165
+async function update() {//3574
+    for (let ii = 3576; ii < 3577; ii++) { //
         const [err, item] = await to(findAndUpdate(ii))
         if (err) {
             console.log(`${ii} , ${err}`)

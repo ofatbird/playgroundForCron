@@ -105,61 +105,62 @@ function fetchUpdate(start) {
     let count = start
     let indexDB = []
 
-    const endpoint = start + 10
-    console.log(start, endpoint)
-    puppeteer.launch({
-        timeout: 15000
-    }).then(async browser => {
-        while (count < endpoint) {
-            const page = await browser.newPage();
-            await page.setExtraHTTPHeaders({
-                cookie: `__cfduid=dcdcbd6f154a3290d66b10b5ced0df7861520604389; PHPSESSID=8blp3ntq4k2npqcvic059at5p5; HstCfa3034720=1520604392613; HstCla3034720=1520604392613; HstCmu3034720=1520604392613; HstPn3034720=1; HstPt3034720=1; HstCnv3034720=1; HstCns3034720=1; __dtsu=D9E9B66BE994A25A7E395EB8025B2A67; existmag=all`
-            })
-            // const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
-            // console.log(uri)
-            const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
-                waitUntil: 'domcontentloaded'
-            }))
-            if (networkErr) {
-                await page.close()
-                console.log(networkErr)
-                console.log(chalk.yellow('network error'))
-                continue
-            }
-            const [error, resources] = await to(page.evaluate(() => {
-                const items = document.querySelectorAll('.movie-box')
-                return [].map.call(items, ele => {
-                    const info = ele.querySelector('img');
-                    const date = ele.querySelectorAll('date')
-                    return {
-                        cover: info.getAttribute('src'),
-                        title: info.getAttribute('title'),
-                        number: date[0].innerHTML,
-                        date: date[1].innerHTML
-                    }
+    const endpoint = start + 1
+    return new Promise((resolve, reject) => {
+        puppeteer.launch({
+            timeout: 15000
+        }).then(async browser => {
+            while (count < endpoint) {
+                const page = await browser.newPage();
+                await page.setExtraHTTPHeaders({
+                    cookie: `__cfduid=d34894136e6a078316ad17b08ac9225441509805299; HstCfa3034720=1509805537073; c_ref_3034720=https%3A%2F%2Fwww.javbus.xyz%2F; HstCmu3034720=1522664334418; PHPSESSID=dcssk4vmu4885n20vbu3hprj02; existmag=all; HstCla3034720=1522750659276; HstPn3034720=19; HstPt3034720=599; HstCnv3034720=33; HstCns3034720=37; __dtsu=D9E9B66BE3CDFD59CC6B4854020D4EC7`
                 })
-            }))
-            await page.close()
-            if (error || (!error && !resources.length)) {
-                console.log(error, resources.length)
-                break;
+                // const uri = count > 1 ? mainPrefix + '/' + count : mainPrefix.replace('/page','')
+                // console.log(uri)
+                const [networkErr] = await to(page.goto(mainPrefix + '/' + count, {
+                    waitUntil: 'domcontentloaded'
+                }))
+                if (networkErr) {
+                    await page.close()
+                    console.log(networkErr)
+                    console.log(chalk.yellow('network error'))
+                    continue
+                }
+                const [error, resources] = await to(page.evaluate(() => {
+                    const items = document.querySelectorAll('.movie-box')
+                    return [].map.call(items, ele => {
+                        const info = ele.querySelector('img');
+                        const date = ele.querySelectorAll('date')
+                        return {
+                            cover: info.getAttribute('src'),
+                            title: info.getAttribute('title'),
+                            number: date[0].innerHTML,
+                            date: date[1].innerHTML
+                        }
+                    })
+                }))
+                await page.close()
+                if (error || (!error && !resources.length)) {
+                    console.log(error, resources.length)
+                    break;
+                }
+                // const newRes = await filter(resources)
+                indexDB = indexDB.concat(resources)
+                // console.log(count, newRes.length)
+                // if (newRes.length < 30) {
+                //     break
+                // }
+                count++
+                // await sleep(getRandomArbitrary(1, 5) * 1000)
             }
-            // const newRes = await filter(resources)
-            indexDB = indexDB.concat(resources)
-            // console.log(count, newRes.length)
-            // if (newRes.length < 30) {
-            //     break
-            // }
-            count++
-            // await sleep(getRandomArbitrary(1, 5) * 1000)
-        }
-        let bson = {}
-        indexDB.forEach((ele, index) => {
-            bson[index] = ele
+            let bson = {}
+            indexDB.forEach((ele, index) => {
+                bson[index] = ele
+            })
+            await browser.close()
+            jsonfile.writeFileSync('../json/updateThread.json', bson)
+            resolve('done')
         })
-        await browser.close()
-        jsonfile.writeFileSync('../json/updateThread.json', bson)
-        // db.close()
     })
 }
 
@@ -263,7 +264,7 @@ function saveDate(db) {
             }
             if (networkErrFlag) networkErrFlag = 0
             const htmlStr = await page.content()
-            
+
             const html = await page.evaluate(() => {
                 const infos = document.querySelector('.info')
                 const mags = document.querySelector('#magnet-table')
@@ -309,7 +310,7 @@ function saveDate(db) {
             })
             if (!html.magnet) {
                 await page.close()
-                console.log('they do not have this')
+                console.log(chalk.hex('#cccccc')('There is nothing here'))
                 start++
                 continue
             }
@@ -320,6 +321,7 @@ function saveDate(db) {
             const [saveErr, saveSucc] = await to(save2Atlas(Object.assign({
                 number,
                 pic: cover,
+                fake: false,
                 // insertDate: Number(new Date('03/05/2018').getTime()) + (pool.length * 200 + start),
                 insertDate: Number(Date.now())
             }, html)))
@@ -351,5 +353,8 @@ async function launch() {
 }
 
 // launch()
-fetchUpdate(110)
+fetchUpdate(109).then(() => {
+    connectMongo(saveDate)
+})
+
 // connectMongo(saveDate)

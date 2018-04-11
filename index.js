@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const jsonfile = require('jsonfile');
 const to = require('await-to-js').to
 const ip = ['97.64.127.44', '111.74.56.249', '121.41.175.199']
-const keyword = 'pjgirls'
+const keyword = 'girlsway'
 const random = () => Math.floor(Math.random() * 3)
 
 function sleep(ms) {
@@ -29,7 +29,7 @@ puppeteer.launch().then(async browser => {
             waitUntil: 'domcontentloaded'
         }));
         if (networkErr) {
-            await package.close()
+            await page.close()
             console.log(networkErr)
             continue;
         }
