@@ -221,7 +221,7 @@ function fetchByGenre(uri, index) {
 function saveDate(db) {
     let networkErrFlag = 0
     let start = 0
-    // let start = 3149;
+    let succ = 0;
     // let counter = 4054;
     const bsonDB = jsonfile.readFileSync(`../json/updateThread.json`)
     const pool = Object.keys(bsonDB).map(index => bsonDB[index])
@@ -329,12 +329,13 @@ function saveDate(db) {
                 console.log(saveErr)
                 save2log(`${getFormatTime()}: ${saveErr};failed to insert data ${number}\n`)
             } else {
+                succ++
                 console.log(saveSucc)
             }
             start++
             await sleep(getRandomArbitrary(1, 3) * 1000)
         }
-
+        console.log(`There are totally ${succ} saved`)
         await browser.close()
         db.close()
     })
@@ -353,8 +354,8 @@ async function launch() {
 }
 
 // launch()
-// fetchUpdate(4).then(() => {
-//     // connectMongo(saveDate)
-// })
+fetchUpdate(181).then(() => {
+    connectMongo(saveDate)
+})
 
-connectMongo(saveDate)
+// connectMongo(saveDate)
