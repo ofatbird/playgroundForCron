@@ -218,7 +218,7 @@ function fetchByGenre(uri, index) {
 
 }
 
-function saveDate(db) {
+function saveData(db) {
     let networkErrFlag = 0
     let start = 0
     let succ = 0;
@@ -354,8 +354,8 @@ async function launch() {
 }
 
 // launch()
-fetchUpdate(181).then(() => {
-    connectMongo(saveDate)
-})
+// fetchUpdate(4).then(() => {
+//     connectMongo(saveData)
+// })
 
-// connectMongo(saveDate)
+// connectMongo(saveData)
