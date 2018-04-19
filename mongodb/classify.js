@@ -57,20 +57,20 @@ Object.keys(info).forEach((el, index) => {
     }
   }
   if (magnet.length) {
-  //     // database[name] = {
-  //     //     number: info[index].number,
-  //     //     pic: info[index].pic,
-  //     //     info: `<p>片名: ${info[index].number}</p>`,
-  //     //     fake: false,
-  //     //     insertDate: Number(Date.now()),
-  //     //     magnet,
-  //     // }
+      database[name] = {
+          number: info[index].number,
+          pic: info[index].pic,
+          info: `<p>片名: ${info[index].number}</p>`,
+          fake: false,
+          insertDate: Number(Date.now()),
+          magnet,
+      }
   } else {
       unmatched.push(info[index])
   }
 
 })
-console.log(unmatched)
+// console.log(unmatched)
 function save2Atlas (bson) {
   return new Promise((resolve, reject) => {
 
@@ -98,4 +98,4 @@ function save2Atlas (bson) {
 // unmatched.forEach((el, index) => {
 //     tmpJSON[index] = el
 // })
-//  jsonfile.writeFileSync('../json/wyfiltered.json', tmpJSON)
+jsonfile.writeFileSync('../json/wyraw.json', database)

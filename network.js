@@ -53,17 +53,18 @@ puppeteer.launch().then(async browser => {
     // indexDB.forEach((ele, index) => {
     //     indexJSON[index] = ele
     // })
-
+    // https://www.digitalplayground.com/videos/all-videos/all-pornstars/lesbian/alltime/bydate/1
     const page = await browser.newPage();
     // await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:57.0) Gecko/20100101 Firefox/56.0')
-    const [networkErr] = await to(page.goto('http://digitalplayground.com/tags/', {
-        waitUntil: 'networkidle0'
+    const [networkErr] = await to(page.goto('https://www.girlsway.com/en/videos', {
+        waitUntil: 'domcontentloaded'
     }))
+    // networkidle0
     // jsonfile.writeFileSync('./json/wyinfo.json', indexJSON)
     // await page.evaluate(() => {
     //     window.scrollBy(0, window.innerHeight);
     // })
-    await timeout(5000)
+    await timeout(3000)
     // if (networkErr)
     const [error, html] = await to(page.content())
     // const [error, html] = await to(page.evaluate(() => {
