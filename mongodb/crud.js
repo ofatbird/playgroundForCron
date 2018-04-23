@@ -354,8 +354,8 @@ async function launch() {
 }
 
 // launch()
-// fetchUpdate(4).then(() => {
-//     connectMongo(saveData)
-// })
+fetchUpdate(3).then(() => {
+    connectMongo(saveData)
+})
 
 // connectMongo(saveData)

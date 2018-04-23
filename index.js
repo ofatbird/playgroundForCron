@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const jsonfile = require('jsonfile');
 const to = require('await-to-js').to
 const ip = ['97.64.127.44', '111.74.56.249', '121.41.175.199']
-const keyword = 'webyoung'
+const keyword = 'Girls Loving Girls'
 const random = () => Math.floor(Math.random() * 3)
 
 function sleep(ms) {
@@ -55,7 +55,7 @@ puppeteer.launch().then(async browser => {
         await sleep(5000)
     }
     // console.log(curpage)
-    jsonfile.writeFileSync('./json/wy1.json', curpage) //cover 
+    jsonfile.writeFileSync('./json/glg.json', curpage) //cover 
     // const compare = curpage.map(ele => ele.replace(/\.\,/g,'\n').split('\n'))
     await browser.close();
 
