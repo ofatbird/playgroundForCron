@@ -354,7 +354,7 @@ async function launch() {
 }
 
 // launch()
-fetchUpdate(3).then(() => {
+fetchUpdate(199).then(() => {
     connectMongo(saveData)
 })
 

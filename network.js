@@ -18,10 +18,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 puppeteer.launch().then(async browser => {
     let count = 1
     let indexDB = []
-    while (count < 2) {
+    while (count < 10) {
         const page = await browser.newPage();
-        // const url = 'https://www.webyoung.com/en/videos/updates/All-Categories/0/All-Pornstars/0/' + count
-        const [networkErr] = await to(page.goto('http://www.adultfilmdatabase.com/browse.cfm?type=title&page=1&dsp=30&sb=viewcount&cf=Lesbian&sf=&showgay=0&showbi=0&showtrans=0&dspas= grid', {
+        const url = 'https://www.girlsway.com/en/videos/updates/All-Categories/0/All-Pornstars/0/' + count
+        const [networkErr] = await to(page.goto(url, {
             waitUntil: 'domcontentloaded'
         }))
         if (networkErr) {
@@ -30,30 +30,31 @@ puppeteer.launch().then(async browser => {
             continue
         }
         const result = await page.evaluate(() => {
+            // 'http://www.adultfilmdatabase.com/browse.cfm?type=title&page=1&dsp=30&sb=viewcount&cf=Lesbian&sf=&showgay=0&showbi=0&showtrans=0&dspas= grid'
             // const container = document.querySelector('.w3-container.w3-white.w3-round.w3-card-2')
-            const items = document.querySelectorAll('.w3-container.w3-center.w3-padding')
-            return [].map.call(items, item => {
-                const aTag = item.querySelector('a')
-                const pic = aTag.querySelector('img').getAttribute('src')
-                const number = aTag.getAttribute('title')
-                const href = aTag.getAttribute('href')
-                return {
-                    pic,
-                    number,
-                    href
-                }
-            })
-            // const items = document.querySelectorAll('.tlcItem')
+            // const items = document.querySelectorAll('.w3-container.w3-center.w3-padding')
             // return [].map.call(items, item => {
-            //     const pic = item.querySelector('img').getAttribute('data-original')
-            //     const number = item.querySelector('.tlcTitle>a').getAttribute('title')
-            //     const avatar = [].map.call(item.querySelectorAll('.tlcActors>a'), a => a.innerHTML)
+            //     const aTag = item.querySelector('a')
+            //     const pic = aTag.querySelector('img').getAttribute('src')
+            //     const number = aTag.getAttribute('title')
+            //     const href = aTag.getAttribute('href')
             //     return {
-            //         number,
             //         pic,
-            //         avatar
+            //         number,
+            //         href
             //     }
             // })
+            const items = document.querySelectorAll('.tlcItem')
+            return [].map.call(items, item => {
+                const pic = item.querySelector('img').getAttribute('data-original')
+                const number = item.querySelector('.tlcTitle>a').getAttribute('title')
+                const avatar = [].map.call(item.querySelectorAll('.tlcActors>a'), a => a.innerHTML)
+                return {
+                    number,
+                    pic,
+                    avatar
+                }
+            })
         })
         await page.close()
         indexDB = indexDB.concat(result)
@@ -66,7 +67,7 @@ puppeteer.launch().then(async browser => {
     indexDB.forEach((ele, index) => {
         indexJSON[index] = ele
     })
-    jsonfile.writeFileSync('./json/database.json', indexJSON)
+    jsonfile.writeFileSync('./json/gw.json', indexJSON)
     // https://www.digitalplayground.com/videos/all-videos/all-pornstars/lesbian/alltime/bydate/1
     // const page = await browser.newPage();
     // // await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:57.0) Gecko/20100101 Firefox/56.0')
