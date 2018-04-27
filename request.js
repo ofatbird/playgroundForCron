@@ -2,7 +2,7 @@ const request = require('request')
 const fs = require('fs')
 const cheerio = require('cheerio')
 
-request('http://www.adultfilmdatabase.com/video/122414/madame-eva-and-her-girls/', function(error, response, body) {
+request('https://www.hotmovies.com/category/761/Lesbian/', function(error, response, body) {
     if (error) {
         console.log(error)
     } else {
